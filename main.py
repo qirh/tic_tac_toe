@@ -6,7 +6,9 @@ class Player():
     self.name = name
 
 class Board():
-  board = [] # board of 9 slots
+  def __init__(self, board_size=[3,3]):
+    board = [i for i in range(board_size[0]*board_size[1])]
+
   def draw():
     pass
 
