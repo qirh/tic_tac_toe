@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
+from random import randint, shuffle
+
+class IllegalMove(Exception):
+   pass
+
 class Player():
   def __init__(self, char, name):
     self.char = char
@@ -24,32 +31,41 @@ class Board():
     self.col = col
     # self._board = [[self.Cell(i+row*j) for i in range(col)] for j in range(row)] TODO: variable board
     self._board = [self.Cell(i) for i in range(row*col)]
+    self.list_of_random_moves = [i for i in range(row*col)]
+    shuffle(self.list_of_random_moves)
 
-  def draw(self):
-    print(self._board)
-    print('', '—'*self.col*6)
+  def __repr__(self):
+    printed_board = ''
+    printed_board += ' ' + '—'*self.col*6 + '\n'
     for row in range(self._row):
-      print('|', end=' ')
+      printed_board += '| '
       for col in range(self.col):
-        print(self._board[col+row*self._row], end=' | ')
-      print()
-    print('', '—'*self.col*6)
+        printed_board += self._board[col+row*self._row].__str__() + ' | '
+      printed_board += '\n'
+    printed_board += ' ' + '—'*self.col*6 + '\n'
 
-  def is_game_over(self):
+    return printed_board
+
+  def is_game_over(self, move):
     #TODO:
     return False
 
-  def is_move_legal(self, place):
-    return board[place].is_free
+  def _is_move_legal(self, move):
+    try:
+      return board[place].is_free
+    except Exception:
+      return False
 
+  def make_move(self, move):
+    if not _is_move_legal(move):
+      raise IllegalMove(f'move {move} is not allowed')
+    self._board
 USER = Player('O', 'player')
 COMPUTER = Player('X', 'computer')
 PLAYERS = [USER, COMPUTER]
 board  = Board()
 
 def welcome():
-  import os
-  import sys
   os.system('clear')
 
   print('welcome, to tic_tac_toe\n')
@@ -96,31 +112,41 @@ def pick_char():
       player.char = user_input
 
 def who_plays_first(players):
-  from random import shuffle
-  shuffle(players)
-  return PLAYERS[0]
+  return randint(0, len(players) - 1)
 
-def make_move():
-  pass
+def computer_pick_move(difficulty):
+  if difficulty == 1:
+    for move in board.list_of_random_moves:
+      board.make_move()
+
+  # TODO: board.is_game_over()
+  return
 def play(difficulty):
-  turn = who_plays_first(PLAYERS)
+  turn_index = who_plays_first(PLAYERS)
+  turn = PLAYERS[turn_index]
 
-  while not board.is_game_over():
+  while True:
     print(f'{turn.name}\'s turn')
-    board.draw()
+    print('-')
+    print(board)
+    print('-')
 
     if turn.name == 'player':
       player_input = input('>> ')
 
       try:
         move = int(player_input)
-        if board.is_move_legal(move):
-          pass
-        else:
+        try:
+          board.make_move(move)
+        except IllegalMove:
           print('illegal move')
       except ValueError:
         print('invalid move')
     else:
       make_move()
+      break
+
+    turn_index = (turn_index + 1) % 2
+    turn = PLAYERS[turn_index]
 
 welcome()
