@@ -52,17 +52,22 @@ class Board():
 
   def _is_move_legal(self, move):
     try:
-      return board[place].is_free
-    except Exception:
+      return self._board[move].is_free
+    except Exception as e:
+      print('here', e)
       return False
 
-  def make_move(self, move):
-    if not _is_move_legal(move):
+  def make_move(self, move, player):
+    if not self._is_move_legal(move):
       raise IllegalMove(f'move {move} is not allowed')
-    self._board
-USER = Player('O', 'player')
+    self._board[move].is_free = False
+    self._board[move].player = player.char
+    print(self._board[move])
+
+
+HUMAN = Player('O', 'player')
 COMPUTER = Player('X', 'computer')
-PLAYERS = [USER, COMPUTER]
+PLAYERS = [HUMAN, COMPUTER]
 board  = Board()
 
 def welcome():
@@ -102,14 +107,14 @@ def pick_char():
   print(f'accepted chars are ascii[{AASCII_LOWER_BOUND}, {AASCII_LOWER_BOUND}]')
 
   for player in PLAYERS:
-    user_input = input(f'the {player.name}\'s char is ({player.char}) enter a new char to change it or press enter to skip\n')
+    human_input = input(f'the {player.name}\'s char is ({player.char}) enter a new char to change it or press enter to skip\n')
 
-    if len(user_input) == 0:
+    if len(human_input) == 0:
       pass
-    elif len(user_input) > 1 or ord(user_input) < AASCII_LOWER_BOUND or ord(user_input) > AASCII_LOWER_BOUND:
+    elif len(human_input) > 1 or ord(human_input) < AASCII_LOWER_BOUND or ord(human_input) > AASCII_LOWER_BOUND:
       print('invalid input, keeping default value')
     else:
-      player.char = user_input
+      player.char = human_input
 
 def who_plays_first(players):
   return randint(0, len(players) - 1)
@@ -117,7 +122,11 @@ def who_plays_first(players):
 def computer_pick_move(difficulty):
   if difficulty == 1:
     for move in board.list_of_random_moves:
-      board.make_move()
+      try:
+        board.make_move(move, COMPUTER)
+        break
+      except IllegalMove:
+        pass
 
   # TODO: board.is_game_over()
   return
@@ -126,26 +135,24 @@ def play(difficulty):
   turn = PLAYERS[turn_index]
 
   while True:
-    print(f'{turn.name}\'s turn')
-    print('-')
-    print(board)
-    print('-')
+    print(f'<<<{turn.name}\'s turn>>>')
 
     if turn.name == 'player':
+      print(board)
       player_input = input('>> ')
 
       try:
         move = int(player_input)
         try:
-          board.make_move(move)
+          board.make_move(move, HUMAN)
         except IllegalMove:
           print('illegal move')
       except ValueError:
         print('invalid move')
+        continue
     else:
-      make_move()
-      break
-
+      computer_pick_move(difficulty)
+    print(board)
     turn_index = (turn_index + 1) % 2
     turn = PLAYERS[turn_index]
 
