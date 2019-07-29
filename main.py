@@ -11,6 +11,8 @@ class Player():
   def __init__(self, char, name):
     self.char = char
     self.name = name
+  def __repr__(self):
+    return self.char
 
 class Board():
 
@@ -32,6 +34,7 @@ class Board():
     # self._board = [[self.Cell(i+row*j) for i in range(col)] for j in range(row)] TODO: variable board
     self._board = [self.Cell(i) for i in range(row*col)]
     self.list_of_random_moves = [i for i in range(row*col)]
+    self.free_cells = len(self.list_of_random_moves)
     shuffle(self.list_of_random_moves)
 
   def __repr__(self):
@@ -42,13 +45,13 @@ class Board():
       for col in range(self.col):
         printed_board += self._board[col+row*self._row].__str__() + ' | '
       printed_board += '\n'
-    printed_board += ' ' + '—'*self.col*6 + '\n'
+    printed_board += ' ' + '—'*self.col*6
 
     return printed_board
 
-  def is_game_over(self, move):
-    #TODO:
-    return False
+  def _is_game_over(self, move):
+    if self.free_cells <= 0:
+      return True
 
   def _is_move_legal(self, move):
     try:
@@ -57,12 +60,19 @@ class Board():
       return False
 
   def make_move(self, move, player):
+    '''
+      returns player object if that player has won
+      else returns number of free spots on the board
+    '''
     if not self._is_move_legal(move):
       raise IllegalMove(f'move {move} is not allowed')
     self._board[move].is_free = False
-    self._board[move].player = player.char
-    print(self._board[move])
+    self._board[move].player = player
+    self.free_cells -= 1
 
+    if self._is_game_over(move):
+      raise Exception
+    return False
 
 HUMAN = Player('O', 'player')
 COMPUTER = Player('X', 'computer')
@@ -120,19 +130,22 @@ def who_plays_first(players):
 
 def computer_pick_move(difficulty):
   if difficulty == 1:
-    for move in board.list_of_random_moves:
+    for index, move in enumerate(board.list_of_random_moves[:]):
       try:
         board.make_move(move, COMPUTER)
-        break
+        board.list_of_random_moves = board.list_of_random_moves[index:]
+        return move
       except IllegalMove:
         pass
 
-  # TODO: board.is_game_over()
-  return
+  else:
+    # TODO: difficulty
+    pass
+
 def play(difficulty):
   turn_index = who_plays_first(PLAYERS)
   turn = PLAYERS[turn_index]
-
+  print()
   while True:
     print(f'<<<{turn.name}\'s turn>>>')
 
@@ -145,13 +158,15 @@ def play(difficulty):
         try:
           board.make_move(move, HUMAN)
         except IllegalMove:
-          print('illegal move')
+          print('illegal move\n')
+          continue
       except ValueError:
-        print('invalid move')
+        print('invalid move\n')
         continue
     else:
-      computer_pick_move(difficulty)
-    print(board)
+      move = computer_pick_move(difficulty)
+
+    print(f'{turn.name} played at index {move}\n')
     turn_index = (turn_index + 1) % 2
     turn = PLAYERS[turn_index]
 
