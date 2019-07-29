@@ -54,7 +54,6 @@ class Board():
     try:
       return self._board[move].is_free
     except Exception as e:
-      print('here', e)
       return False
 
   def make_move(self, move, player):
