@@ -6,21 +6,41 @@ class Player():
     self.name = name
 
 class Board():
+
+  class Cell():
+    def __init__(self, index):
+      self.index = index
+      self.player = ''
+      self.is_free = True
+
+    def __repr__(self):
+      if self.is_free:
+        return f'({self.index})'
+      else:
+        return f'({self.player})'
+
   def __init__(self, row=3, col=3):
     self._row = row
     self.col = col
-    self._board = [[i+row*j for i in range(col)] for j in range(row)]
+    # self._board = [[self.Cell(i+row*j) for i in range(col)] for j in range(row)] TODO: variable board
+    self._board = [self.Cell(i) for i in range(row*col)]
 
   def draw(self):
+    print(self._board)
     print('', '—'*self.col*6)
-    for row in self._board:
+    for row in range(self._row):
       print('|', end=' ')
-      for col in row:
-        print(f'({col})', end=' | ')
+      for col in range(self.col):
+        print(self._board[col+row*self._row], end=' | ')
       print()
     print('', '—'*self.col*6)
+
   def is_game_over(self):
-    print('draw()')
+    #TODO:
+    return False
+
+  def is_move_legal(self, place):
+    return board[place].is_free
 
 USER = Player('O', 'player')
 COMPUTER = Player('X', 'computer')
@@ -75,8 +95,32 @@ def pick_char():
     else:
       player.char = user_input
 
-def play(difficulty):
-  board.draw()
+def who_plays_first(players):
+  from random import shuffle
+  shuffle(players)
+  return PLAYERS[0]
 
+def make_move():
+  pass
+def play(difficulty):
+  turn = who_plays_first(PLAYERS)
+
+  while not board.is_game_over():
+    print(f'{turn.name}\'s turn')
+    board.draw()
+
+    if turn.name == 'player':
+      player_input = input('>> ')
+
+      try:
+        move = int(player_input)
+        if board.is_move_legal(move):
+          pass
+        else:
+          print('illegal move')
+      except ValueError:
+        print('invalid move')
+    else:
+      make_move()
 
 welcome()
