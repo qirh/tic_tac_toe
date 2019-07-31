@@ -34,9 +34,8 @@ class Board():
         return self.str() == other.str()
       return False
 
-
-
   def __init__(self, size=3, col=3):
+    self._size = size
     self._board = [self.Cell(i) for i in range(size*size)]
     self.list_of_random_moves = [i for i in range(size*size)]
     self.free_cells = len(self.list_of_random_moves)
@@ -44,13 +43,13 @@ class Board():
 
   def __repr__(self):
     printed_board = ''
-    printed_board += ' ' + '—'*self.col*6 + '\n'
-    for row in range(self.size):
+    printed_board += ' ' + '—'*self._size*6 + '\n'
+    for row in range(self._size):
       printed_board += '| '
-      for col in range(self.size):
-        printed_board += self._board[col+row*self.size].__str__() + ' | '
+      for col in range(self._size):
+        printed_board += self._board[col+row*self._size].__str__() + ' | '
       printed_board += '\n'
-    printed_board += ' ' + '—'*self.col*6
+    printed_board += ' ' + '—'*self._size*6
 
     return printed_board
 
@@ -58,10 +57,10 @@ class Board():
 
     #1. win condition
     #1(a). row & col win
-    for i in range(self.size):
-      if move >= i*size and move < (i+1)*size:
+    for i in range(self._size):
+      if move >= i*self._size and move < (i+1)*self._size:
         # check row victory
-        row = [j for j in range(i*size, (i+1)*size)]
+        row = [j for j in range(i*self._size, (i+1)*self._size)]
         if all(cell==row[0] for cell in row):
           return {
             'win': True,
@@ -72,9 +71,9 @@ class Board():
 
         # check col victory
         first_row = move
-        while first_row > size:
-          first_row -= size
-        col = [i for i in range(first_row, (size*size)+1, size)]
+        while first_row > self._size:
+          first_row -= self._size
+        col = [i for i in range(first_row, (self._size*self._size)+1, self._size)]
         if all(cell==col[0] for cell in col):
           return {
             'win': True,
@@ -83,8 +82,9 @@ class Board():
             'row_index': first_row,
           }
     #1(b). diagonal win, only odd sized boards
-    if size%2 != 0:
-      pass
+    if self._size%2 != 0:
+      if move == (self._size//2)*self._size + (self._size//2):
+        pass # this is diag
 
     #2. no one won, but no more moves (tie)
     if self.free_cells <= 0:
@@ -173,9 +173,10 @@ def computer_pick_move(difficulty):
   if difficulty == 1:
     for index, move in enumerate(board.list_of_random_moves[:]):
       try:
-        board.make_move(move, COMPUTER)
+        result = board.make_move(move, COMPUTER)
         board.list_of_random_moves = board.list_of_random_moves[index:]
-        return move
+        result['move']  = move
+        return result
       except IllegalMove:
         pass
 
@@ -188,7 +189,7 @@ def play(difficulty):
   turn = PLAYERS[turn_index]
   print()
 
-  while not board.is_game_over():
+  while True:
     print(f'<<<{turn.name}\'s turn>>>')
 
     if turn.name == 'player':
@@ -198,7 +199,7 @@ def play(difficulty):
       try:
         move = int(player_input)
         try:
-          board.make_move(move, HUMAN)
+          result = board.make_move(move, HUMAN)
         except IllegalMove:
           print('illegal move\n')
           continue
@@ -206,9 +207,9 @@ def play(difficulty):
         print('invalid move\n')
         continue
     else:
-      move = computer_pick_move(difficulty)
+      result = computer_pick_move(difficulty)
 
-    print(f'{turn.name} played at index {move}\n')
+    print(f'{turn.name} played at index {result["move"]}\n')
     turn_index = (turn_index + 1) % 2
     turn = PLAYERS[turn_index]
 
