@@ -30,11 +30,8 @@ class Board:
         return f'({self.player})'
 
     def __eq__(self, other):
-      print('a')
       if isinstance(other, self.__class__):
-        print('b', self.__str__() == other.__str__())
         return self.__str__() == other.__str__()
-      print('c')
       return False
 
   def __init__(self, size=3, col=3):
@@ -69,21 +66,21 @@ class Board:
             'win': True,
             'player': player,
             'win_condition': 'row',
-            'row_index': i,
+            'index': i,
           }
 
         # check col victory
         first_row = move
-        while first_row > self._size:
+        while first_row >= self._size:
           first_row -= self._size
-        col = [self._board[k] for k in range(first_row, (self._size*self._size)+1, self._size)]
+        col = [self._board[k] for k in range(first_row, (self._size*self._size), self._size)]
         if all(cell==col[0] for cell in col):
           return {
             'game_over': True,
             'win': True,
             'player': player,
             'win_condition': 'col',
-            'row_index': first_row,
+            'index': first_row,
           }
     #1(b). diagonal win, only odd sized boards
     if self._size%2 != 0:
@@ -93,7 +90,7 @@ class Board:
     #2. no one won, but no more moves (tie)
     if self.free_cells <= 0:
       return {
-        'is_game_over': True,
+        'game_over': True,
         'tie': True
       }
 
@@ -119,7 +116,7 @@ class Board:
       **self.is_game_over(move, player),
     }
 
-HUMAN = Player('O', 'player')
+HUMAN = Player('O', 'human')
 COMPUTER = Player('X', 'computer')
 PLAYERS = [HUMAN, COMPUTER]
 board  = Board()
@@ -151,6 +148,10 @@ def welcome():
 
   if sys.argv[1:] and '-skip_char' not in sys.argv[1:]:
     pick_char()
+  chars = 'players will play with the following chars\n'
+  for player in PLAYERS:
+    chars += f'\t- {player.name} ({player.char})\n'
+  print(chars)
 
   play(difficulty)
 
@@ -191,12 +192,11 @@ def computer_pick_move(difficulty):
 def play(difficulty):
   turn_index = who_plays_first(PLAYERS)
   turn = PLAYERS[turn_index]
-  print()
 
   while True:
     print(f'<<<{turn.name}\'s turn>>>')
 
-    if turn.name == 'player':
+    if turn.name == 'human':
       print(board)
       player_input = input('>> ')
 
@@ -214,7 +214,13 @@ def play(difficulty):
       result = computer_pick_move(difficulty)
 
     if result['game_over']:
-      print('GAME OVER')
+      print(board)
+      print('Game Over.', end=' ')
+      if result.get('win'):
+        print(f'player {turn.name} has won. Winning {result["win_condition"]} @index #{result["index"]}')
+      elif result.get('tie'):
+        print('¡Game Tied!')
+      break
     else:
       print(f'{turn.name} played at index {result["move"]}\n')
       turn_index = (turn_index + 1) % 2
