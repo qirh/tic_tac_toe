@@ -29,31 +29,74 @@ class Board():
       else:
         return f'({self.player})'
 
-  def __init__(self, row=3, col=3):
-    self._row = row
-    self.col = col
-    # self._board = [[self.Cell(i+row*j) for i in range(col)] for j in range(row)] TODO: variable board
-    self._board = [self.Cell(i) for i in range(row*col)]
-    self.list_of_random_moves = [i for i in range(row*col)]
+    def __eq__(self, other):
+      if isinstance(other, Cell):
+        return self.str() == other.str()
+      return False
+
+
+
+  def __init__(self, size=3, col=3):
+    self._board = [self.Cell(i) for i in range(size*size)]
+    self.list_of_random_moves = [i for i in range(size*size)]
     self.free_cells = len(self.list_of_random_moves)
     shuffle(self.list_of_random_moves)
 
   def __repr__(self):
     printed_board = ''
     printed_board += ' ' + '—'*self.col*6 + '\n'
-    for row in range(self._row):
+    for row in range(self.size):
       printed_board += '| '
-      for col in range(self.col):
-        printed_board += self._board[col+row*self._row].__str__() + ' | '
+      for col in range(self.size):
+        printed_board += self._board[col+row*self.size].__str__() + ' | '
       printed_board += '\n'
     printed_board += ' ' + '—'*self.col*6
 
     return printed_board
 
-  def _is_game_over(self, move):
-    if self.free_cells <= 0:
-      return True
+  def is_game_over(self, move, player):
 
+    #1. win condition
+    #1(a). row & col win
+    for i in range(self.size):
+      if move >= i*size and move < (i+1)*size:
+        # check row victory
+        row = [j for j in range(i*size, (i+1)*size)]
+        if all(cell==row[0] for cell in row):
+          return {
+            'win': True,
+            'player': player,
+            'win_condition': 'row',
+            'row_index': i,
+          }
+
+        # check col victory
+        first_row = move
+        while first_row > size:
+          first_row -= size
+        col = [i for i in range(first_row, (size*size)+1, size)]
+        if all(cell==col[0] for cell in col):
+          return {
+            'win': True,
+            'player': player,
+            'win_condition': 'col',
+            'row_index': first_row,
+          }
+    #1(b). diagonal win, only odd sized boards
+    if size%2 != 0:
+      pass
+
+    #2. no one won, but no more moves (tie)
+    if self.free_cells <= 0:
+      return {
+        'is_game_over': True,
+        'tie': True
+      }
+
+    #3. no one won and there are still moves
+    return {
+        'is_game_over': False,
+      }
   def _is_move_legal(self, move):
     try:
       return self._board[move].is_free
@@ -61,19 +104,16 @@ class Board():
       return False
 
   def make_move(self, move, player):
-    '''
-      returns player object if that player has won
-      else returns number of free spots on the board
-    '''
     if not self._is_move_legal(move):
       raise IllegalMove(f'move {move} is not allowed')
     self._board[move].is_free = False
     self._board[move].player = player
     self.free_cells -= 1
 
-    if self._is_game_over(move):
-      raise Exception
-    return False
+    return {
+      'move': move,
+      'game_over': self.is_game_over(move, player),
+    }
 
 HUMAN = Player('O', 'player')
 COMPUTER = Player('X', 'computer')
@@ -147,7 +187,8 @@ def play(difficulty):
   turn_index = who_plays_first(PLAYERS)
   turn = PLAYERS[turn_index]
   print()
-  while True:
+
+  while not board.is_game_over():
     print(f'<<<{turn.name}\'s turn>>>')
 
     if turn.name == 'player':
