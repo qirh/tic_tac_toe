@@ -15,9 +15,9 @@ class Player():
   def __repr__(self):
     return self.char
 
-class Board():
+class Board:
 
-  class Cell():
+  class Cell:
     def __init__(self, index):
       self.index = index
       self.player = ''
@@ -30,8 +30,11 @@ class Board():
         return f'({self.player})'
 
     def __eq__(self, other):
-      if isinstance(other, Cell):
-        return self.str() == other.str()
+      print('a')
+      if isinstance(other, self.__class__):
+        print('b', self.__str__() == other.__str__())
+        return self.__str__() == other.__str__()
+      print('c')
       return False
 
   def __init__(self, size=3, col=3):
@@ -54,15 +57,15 @@ class Board():
     return printed_board
 
   def is_game_over(self, move, player):
-
     #1. win condition
     #1(a). row & col win
     for i in range(self._size):
       if move >= i*self._size and move < (i+1)*self._size:
         # check row victory
-        row = [j for j in range(i*self._size, (i+1)*self._size)]
+        row = [self._board[j] for j in range(i*self._size, (i+1)*self._size)]
         if all(cell==row[0] for cell in row):
           return {
+            'game_over': True,
             'win': True,
             'player': player,
             'win_condition': 'row',
@@ -73,9 +76,10 @@ class Board():
         first_row = move
         while first_row > self._size:
           first_row -= self._size
-        col = [i for i in range(first_row, (self._size*self._size)+1, self._size)]
+        col = [self._board[k] for k in range(first_row, (self._size*self._size)+1, self._size)]
         if all(cell==col[0] for cell in col):
           return {
+            'game_over': True,
             'win': True,
             'player': player,
             'win_condition': 'col',
@@ -95,7 +99,7 @@ class Board():
 
     #3. no one won and there are still moves
     return {
-        'is_game_over': False,
+        'game_over': False,
       }
   def _is_move_legal(self, move):
     try:
@@ -112,7 +116,7 @@ class Board():
 
     return {
       'move': move,
-      'game_over': self.is_game_over(move, player),
+      **self.is_game_over(move, player),
     }
 
 HUMAN = Player('O', 'player')
@@ -209,8 +213,11 @@ def play(difficulty):
     else:
       result = computer_pick_move(difficulty)
 
-    print(f'{turn.name} played at index {result["move"]}\n')
-    turn_index = (turn_index + 1) % 2
-    turn = PLAYERS[turn_index]
+    if result['game_over']:
+      print('GAME OVER')
+    else:
+      print(f'{turn.name} played at index {result["move"]}\n')
+      turn_index = (turn_index + 1) % 2
+      turn = PLAYERS[turn_index]
 
 welcome()
