@@ -3,6 +3,7 @@
 
 import os
 import sys
+import copy
 from random import randint, shuffle
 
 class IllegalMove(Exception):
@@ -61,6 +62,7 @@ class Board:
     else:
       board = self._board
 
+    print('here', move, test_board)
     if not self._is_move_legal(move, board):
       raise IllegalMove(f'move {move} is not allowed')
     board[move].is_free = False
@@ -126,7 +128,7 @@ class Board:
       return False
 
   def test_win_move(self, move, player):
-    test_board = self._board[:]
+    test_board = [copy.deepcopy(cell) for cell in self._board] # deep copy
     return self.make_move(move, COMPUTER, test_board)
 
   def computer_pick_move(self):
@@ -162,8 +164,9 @@ class Board:
           return result
       # play center
       if self._board[(self._size//2)*self._size + (self._size//2)].is_free:
-        result = self.make_move((self._size//2)*self._size + (self._size//2), COMPUTER)
-        result['move']  = (self._size//2)*self._size + (self._size//2)
+        move = (self._size//2)*self._size + (self._size//2)
+        result = self.make_move(move, COMPUTER)
+        result['move']  = move
         return result
 
 HUMAN = Player('O', 'human')
@@ -200,9 +203,9 @@ def welcome():
     print('1. Regular (default)')
     print('2. Unmöglich!\n')
 
+    difficulty_parsed = 1
     difficulty_input = input('>> ')
     if difficulty_input == '':
-        difficulty_parsed = 1
         break
     else:
       try:
