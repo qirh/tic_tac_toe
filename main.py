@@ -253,7 +253,9 @@ def pick_char():
       player.char = human_input
 
 def who_plays_first(players):
-  return randint(0, len(players) - 1)
+  random_pick = randint(0, len(players) - 1)
+  print(f'{PLAYERS[random_pick].name} picked randomly to play first')
+  return random_pick
 
 def welcome():
   os.system('clear')
@@ -320,7 +322,7 @@ def play():
       if result.get('win'):
         print(f'{turn.name} has won. Winning {result["win_condition"]} @index #{result["index"]}')
       elif result.get('tie'):
-        print('¡Game Tied!')
+        print('!tie!')
       break
     else:
       print(f'{turn.name} played at index {result["move"]}\n')
