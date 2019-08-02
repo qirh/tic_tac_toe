@@ -194,7 +194,7 @@ class Board:
           return result
         except IllegalMove:
           pass
-    # https://mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
+    # mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
     else: # hard
       # check computer win moves
       for move in range(self._size**2):
