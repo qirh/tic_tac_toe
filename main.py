@@ -14,7 +14,7 @@ class Player():
     self.char = char
     self.name = name
   def __repr__(self):
-    return self.char
+    return f'({self.char})'
 
 class Board:
 
@@ -28,7 +28,7 @@ class Board:
       if self.is_free:
         return f'({self.index})'
       else:
-        return f'({self.player})'
+        return f'{self.player}'
 
     def __eq__(self, other):
       if isinstance(other, self.__class__):
@@ -62,7 +62,6 @@ class Board:
     else:
       board = self._board
 
-    print('here', move, test_board)
     if not self._is_move_legal(move, board):
       raise IllegalMove(f'move {move} is not allowed')
     board[move].is_free = False
@@ -78,9 +77,8 @@ class Board:
 
 
   def is_game_over(self, move, player, board):
-
-    #1. win condition
-    #1(a). row & col win
+    # 1. win
+    # 1(a). row & col win
     for i in range(self._size):
       if move >= i*self._size and move < (i+1)*self._size:
         # check row victory
@@ -98,7 +96,7 @@ class Board:
         first_row = move
         while first_row >= self._size:
           first_row -= self._size
-        col = [board[k] for k in range(first_row, (self._size*self._size), self._size)]
+        col = [board[k] for k in range(first_row, (self._size**2), self._size)]
         if all(cell==col[0] for cell in col):
           return {
             'game_over': True,
@@ -107,19 +105,26 @@ class Board:
             'win_condition': 'col',
             'index': first_row,
           }
-    #1(b). diagonal win, only odd sized boards
+    # 1(b). diagonal win, only odd sized boards
     if self._size%2 != 0:
+      print(1, '-', (self._size//2)*self._size + (self._size//2))
       if move == (self._size//2)*self._size + (self._size//2):
-        while (move - size - 1) >= 0:
-          if board[move] != player:
+        print(2)
+        while (move - self._size - 1) >= 0:
+          print(2, '-', move - self._size - 1)
+          if board[move - self._size - 1] != player:
+            print(2, '- if', board[move - self._size - 1], player)
             return {
               'game_over': False,
             }
-        while (move + size + 1) < (size*size):
-          if board[move] != player:
+        while (move + self._size + 1) < (self._size**2):
+          print(3, '-', move + self._size + 1)
+          if board[move + self._size + 1] != player:
+            print(3, '- if')
             return {
               'game_over': False,
             }
+        print(4)
         return {
             'game_over': True,
             'win': True,
@@ -127,14 +132,14 @@ class Board:
             'win_condition': 'center',
           }
 
-    #2. no one won, but no more moves (tie)
+    # 2. not win, no more moves (tie)
     if self.free_cells <= 0:
       return {
         'game_over': True,
         'tie': True
       }
 
-    #3. no one won and there are still moves
+    # 3. no win, there are still moves (continue)
     return {
         'game_over': False,
       }
@@ -177,7 +182,7 @@ class Board:
           return result
       print('c')
       # play a corner
-      for move in [0, self._size-1, 6, (self._size*2)-1]: #TODO: figure out 6
+      for move in [0, self._size-1, 6, (self._size**2)-1]: #TODO: figure out 6
         if self._board[move].is_free:
           result = self.make_move(move, COMPUTER)
           result['move']  = move
@@ -190,6 +195,14 @@ class Board:
         result['move']  = move
         return result
       print('e')
+      # play side (only for size 3). boards with >3 size, it will play at the first empty cell, which is not optimal
+      for move in range(len(board)):
+        if self._board[move].is_free:
+          result = self.make_move(move, COMPUTER)
+          result['move']  = move
+          return result
+      print('f')
+
 HUMAN = Player('O', 'human')
 COMPUTER = Player('X', 'computer')
 PLAYERS = [HUMAN, COMPUTER]
