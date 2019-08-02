@@ -46,7 +46,8 @@ class Board:
     self.difficulty = difficulty
     self.list_of_random_moves = [i for i in range(size*size)]
     self.free_cells = len(self.list_of_random_moves)
-    shuffle(self.list_of_random_moves)
+    # shuffle(self.list_of_random_moves)
+    self.list_of_random_moves = [1, 2, 3, 5, 6, 7]
 
   def __repr__(self):
     printed_board = ''
@@ -119,37 +120,38 @@ class Board:
         # 2 cases:
         neg_slope = True
         pos_slope = True
-
+        print(1, pos_slope, neg_slope)
         # a. negative slope
-        up_left = move - self._size - 1
+        up_left = center - self._size - 1
         while up_left >= 0:
           if board[up_left].player != player:
             neg_slope = False
             break
           up_left -= self._size - 1
-
-        down_right = (move + self._size + 1)
+        print(1, pos_slope, neg_slope)
+        down_right = (center + self._size + 1)
         while neg_slope and down_right < (self._size**2):
           if board[down_right].player != player:
             neg_slope = False
             break
           down_right += self._size + 1
-
+        print(1, pos_slope, neg_slope)
         # b. positive slope
-        up_right = move - self._size + 1
+        up_right = center - self._size + 1
         while up_right >= self._size-1:
           if board[up_right].player != player:
             pos_slope = False
             break
           up_right -= self._size + 1
 
-        down_left = (move + self._size - 1)
+        down_left = (center + self._size - 1)
         while pos_slope and down_left < (self._size**2 - 1):
           if board[down_left].player != player:
             pos_slope = False
             break
           down_left += self._size - 1
 
+        print(pos_slope, neg_slope)
         if neg_slope or pos_slope:
           return {
             'game_over': True,
