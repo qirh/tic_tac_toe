@@ -56,7 +56,7 @@ class Board:
     return printed_board
 
   def make_move(self, move, player, test_board=None):
-
+    free_cells = self.free_cells
     if test_board:
       board = test_board
     else:
@@ -67,8 +67,10 @@ class Board:
       raise IllegalMove(f'move {move} is not allowed')
     board[move].is_free = False
     board[move].player = player
-    self.free_cells -= 1
+    free_cells -= 1
 
+    if not test_board:
+      self.free_cells = free_cells
     return {
       'move': move,
       **self.is_game_over(move, player, board),
@@ -108,7 +110,22 @@ class Board:
     #1(b). diagonal win, only odd sized boards
     if self._size%2 != 0:
       if move == (self._size//2)*self._size + (self._size//2):
-        pass #TODO: this is diag
+        while (move - size - 1) >= 0:
+          if board[move] != player:
+            return {
+              'game_over': False,
+            }
+        while (move + size + 1) < (size*size):
+          if board[move] != player:
+            return {
+              'game_over': False,
+            }
+        return {
+            'game_over': True,
+            'win': True,
+            'player': player,
+            'win_condition': 'center',
+          }
 
     #2. no one won, but no more moves (tie)
     if self.free_cells <= 0:
@@ -144,31 +161,35 @@ class Board:
 
     # https://mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
     else: # hard
+      print('a')
       # check computer win moves
       for move in range(self._size):
         if self._board[move].is_free and self.test_win_move(move, COMPUTER).get('win'):
             result = self.make_move(move, COMPUTER)
             result['move']  = move
             return result
+      print('b')
       # check player win moves
       for move in range(self._size):
         if self._board[move].is_free and self.test_win_move(move, HUMAN).get('win'):
           result = self.make_move(move, COMPUTER)
           result['move']  = move
           return result
+      print('c')
       # play a corner
       for move in [0, self._size-1, 6, (self._size*2)-1]: #TODO: figure out 6
         if self._board[move].is_free:
           result = self.make_move(move, COMPUTER)
           result['move']  = move
           return result
+      print('d')
       # play center
       if self._board[(self._size//2)*self._size + (self._size//2)].is_free:
         move = (self._size//2)*self._size + (self._size//2)
         result = self.make_move(move, COMPUTER)
         result['move']  = move
         return result
-
+      print('e')
 HUMAN = Player('O', 'human')
 COMPUTER = Player('X', 'computer')
 PLAYERS = [HUMAN, COMPUTER]
