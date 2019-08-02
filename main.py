@@ -69,19 +69,16 @@ class Board:
       board = test_board
     else:
       board = self._board
-    print('make_move', 1)
+
     if not self._is_move_legal(move, board):
-      print('make_move', 2)
       raise IllegalMove(f'move {move} is not allowed')
-    print('make_move', 3)
+
     board[move].is_free = False
     board[move].player = player
     free_cells -= 1
-    print('make_move', 4)
+
     if not test_board:
       self.free_cells = free_cells
-    print('make_move', 5, '--', move, player)
-    print(self.is_game_over(move, player, board))
     return {
       'move': move,
       **self.is_game_over(move, player, board),
@@ -117,31 +114,54 @@ class Board:
             'win_condition': 'col',
             'index': first_row,
           }
-    # 1(b). diagonal win, only odd sized boards
-    if self._size%2 != 0:
-      if move == (self._size//2)*self._size + (self._size//2):
+    # 1(b). diagonal win
+    if self._size%2 != 0: # only odd sized boards
+      if move == (self._size//2)*self._size + (self._size//2): # center
+        # 2 cases:
+        neg_slope = True
+        pos_slope = True
+        # a. negative slope
         up_left = move - self._size - 1
         while up_left >= 0:
           if board[up_left].player != player:
-            return {
-              'game_over': False,
-            }
+            neg_slope = False
+            break
           up_left -= self._size - 1
 
         down_right = (move + self._size + 1)
-        while down_right < (self._size**2):
+        while neg_slope and down_right < (self._size**2):
           if board[down_right].player != player:
-            return {
-              'game_over': False,
-            }
+            neg_slope = False
+            break
           down_right += self._size + 1
-        return {
+
+        # b. positive slope
+        up_right = move - self._size + 1
+        while up_right >= self._size-1:
+          if board[up_right].player != player:
+            pos_slope = False
+            break
+          up_right -= self._size + 1
+
+        down_left = (move + self._size - 1)
+        while pos_slope and down_left < (self._size**2):
+          if board[down_left].player != player:
+            pos_slope = False
+            break
+          down_left += self._size - 1
+
+        if neg_slope or pos_slope:
+          return {
             'game_over': True,
             'win': True,
             'index': move,
             'player': player,
             'win_condition': 'center',
           }
+        return {
+          'game_over': False,
+        }
+
 
     # 2. not win, no more moves (tie)
     if self.free_cells <= 0:
@@ -177,45 +197,40 @@ class Board:
 
     # https://mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
     else: # hard
-      print('a')
       # check computer win moves
       for move in range(self._size**2):
         if self._board[move].is_free and self.test_win_move(move, COMPUTER).get('win'):
             result = self.make_move(move, COMPUTER)
             result['move']  = move
             return result
-      print('b')
+
       # check player win moves
       for move in range(self._size**2):
-        print('b -', move)
-        if self._board[move].is_free:
-          print('b -', move, self.test_win_move(move, HUMAN).get('win'))
         if self._board[move].is_free and self.test_win_move(move, HUMAN).get('win'):
           result = self.make_move(move, COMPUTER)
           result['move']  = move
           return result
-      print('c')
+
       # play a corner
       for move in [0, self._size-1, 6, (self._size**2)-1]: #TODO: figure out 6
         if self._board[move].is_free:
           result = self.make_move(move, COMPUTER)
           result['move']  = move
           return result
-      print('d')
+
       # play center
       if self._board[(self._size//2)*self._size + (self._size//2)].is_free:
         move = (self._size//2)*self._size + (self._size//2)
         result = self.make_move(move, COMPUTER)
         result['move']  = move
         return result
-      print('e')
+
       # play side (only for size 3). boards with >3 size, it will play at the first empty cell, which is not optimal
       for move in range(len(board)):
         if self._board[move].is_free:
           result = self.make_move(move, COMPUTER)
           result['move']  = move
           return result
-      print('f')
 
 HUMAN = Player('O', 'human')
 COMPUTER = Player('X', 'computer')
@@ -304,7 +319,7 @@ def play():
       print(board)
       print('Game Over.', end=' ')
       if result.get('win'):
-        print(f'The {turn.name} has won. Winning {result["win_condition"]} @index #{result["index"]}')
+        print(f'{turn.name} has won. Winning {result["win_condition"]} @index #{result["index"]}')
       elif result.get('tie'):
         print('¡Game Tied!')
       break
