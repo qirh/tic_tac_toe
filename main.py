@@ -10,7 +10,6 @@ class IllegalMove(Exception):
    pass
 
 class Player():
-
   def __init__(self, char, name):
     self.char = char
     self.name = name
@@ -24,9 +23,7 @@ class Player():
     return False
 
 class Board:
-
   class Cell:
-
     def __init__(self, index):
       self.index = index
       self.player = None
@@ -114,12 +111,15 @@ class Board:
             'win_condition': 'col',
             'index': first_row,
           }
+
     # 1(b). diagonal win
     if self._size%2 != 0: # only odd sized boards
-      if move == (self._size//2)*self._size + (self._size//2): # center
+      center = (self._size//2)*self._size + (self._size//2)
+      if not board[center].is_free and  board[center].player == player: # center
         # 2 cases:
         neg_slope = True
         pos_slope = True
+
         # a. negative slope
         up_left = move - self._size - 1
         while up_left >= 0:
@@ -144,7 +144,7 @@ class Board:
           up_right -= self._size + 1
 
         down_left = (move + self._size - 1)
-        while pos_slope and down_left < (self._size**2):
+        while pos_slope and down_left < (self._size**2 - 1):
           if board[down_left].player != player:
             pos_slope = False
             break
@@ -154,14 +154,13 @@ class Board:
           return {
             'game_over': True,
             'win': True,
-            'index': move,
+            'index': center,
             'player': player,
             'win_condition': 'center',
           }
         return {
           'game_over': False,
         }
-
 
     # 2. not win, no more moves (tie)
     if self.free_cells <= 0:
@@ -174,6 +173,7 @@ class Board:
     return {
         'game_over': False,
       }
+
   def _is_move_legal(self, move, board):
     try:
       return board[move].is_free
@@ -194,7 +194,6 @@ class Board:
           return result
         except IllegalMove:
           pass
-
     # https://mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
     else: # hard
       # check computer win moves
