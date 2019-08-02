@@ -19,11 +19,8 @@ class Player():
     return f'({self.char})'
 
   def __eq__(self, other):
-    print('__eq__', 1)
     if isinstance(other, self.__class__):
-      print('__eq__', 2)
       return self.__str__() == other.__str__()
-    print('__eq__', 3)
     return False
 
 class Board:
@@ -72,15 +69,19 @@ class Board:
       board = test_board
     else:
       board = self._board
-
+    print('make_move', 1)
     if not self._is_move_legal(move, board):
+      print('make_move', 2)
       raise IllegalMove(f'move {move} is not allowed')
+    print('make_move', 3)
     board[move].is_free = False
     board[move].player = player
     free_cells -= 1
-
+    print('make_move', 4)
     if not test_board:
       self.free_cells = free_cells
+    print('make_move', 5, '--', move, player)
+    print(self.is_game_over(move, player, board))
     return {
       'move': move,
       **self.is_game_over(move, player, board),
@@ -118,12 +119,9 @@ class Board:
           }
     # 1(b). diagonal win, only odd sized boards
     if self._size%2 != 0:
-      print(1, '-', (self._size//2)*self._size + (self._size//2))
       if move == (self._size//2)*self._size + (self._size//2):
-        print(2)
         up_left = move - self._size - 1
         while up_left >= 0:
-          print(2, '-', move - self._size - 1)
           if board[up_left].player != player:
             return {
               'game_over': False,
@@ -132,14 +130,11 @@ class Board:
 
         down_right = (move + self._size + 1)
         while down_right < (self._size**2):
-          print(3, '-', move + self._size + 1)
           if board[down_right].player != player:
-            print(3, '- if')
             return {
               'game_over': False,
             }
           down_right += self._size + 1
-        print(4)
         return {
             'game_over': True,
             'win': True,
@@ -167,7 +162,7 @@ class Board:
 
   def test_win_move(self, move, player):
     test_board = [copy.deepcopy(cell) for cell in self._board] # deep copy
-    return self.make_move(move, COMPUTER, test_board)
+    return self.make_move(move, player, test_board)
 
   def computer_pick_move(self):
     if self.difficulty == 1: # easy
@@ -184,14 +179,17 @@ class Board:
     else: # hard
       print('a')
       # check computer win moves
-      for move in range(self._size):
+      for move in range(self._size**2):
         if self._board[move].is_free and self.test_win_move(move, COMPUTER).get('win'):
             result = self.make_move(move, COMPUTER)
             result['move']  = move
             return result
       print('b')
       # check player win moves
-      for move in range(self._size):
+      for move in range(self._size**2):
+        print('b -', move)
+        if self._board[move].is_free:
+          print('b -', move, self.test_win_move(move, HUMAN).get('win'))
         if self._board[move].is_free and self.test_win_move(move, HUMAN).get('win'):
           result = self.make_move(move, COMPUTER)
           result['move']  = move
