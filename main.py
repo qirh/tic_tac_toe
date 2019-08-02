@@ -194,8 +194,7 @@ class Board:
           return result
         except IllegalMove:
           pass
-    # mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
-    else: # hard
+    else: # https://mblogscode.wordpress.com/2016/06/03/python-naughts-crossestic-tac-toe-coding-unbeatable-ai/
       # check computer win moves
       for move in range(self._size**2):
         if self._board[move].is_free and self.test_win_move(move, COMPUTER).get('win'):
@@ -224,7 +223,7 @@ class Board:
         result['move']  = move
         return result
 
-      # play side (only for size 3). boards with >3 size, it will play at the first empty cell, which is not optimal
+      # play side (only for size 3). boards with size>3 , play first free cell
       for move in range(len(board)):
         if self._board[move].is_free:
           result = self.make_move(move, COMPUTER)
