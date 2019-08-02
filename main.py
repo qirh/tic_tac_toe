@@ -10,18 +10,29 @@ class IllegalMove(Exception):
    pass
 
 class Player():
+
   def __init__(self, char, name):
     self.char = char
     self.name = name
+
   def __repr__(self):
     return f'({self.char})'
+
+  def __eq__(self, other):
+    print('__eq__', 1)
+    if isinstance(other, self.__class__):
+      print('__eq__', 2)
+      return self.__str__() == other.__str__()
+    print('__eq__', 3)
+    return False
 
 class Board:
 
   class Cell:
+
     def __init__(self, index):
       self.index = index
-      self.player = ''
+      self.player = None
       self.is_free = True
 
     def __repr__(self):
@@ -110,24 +121,29 @@ class Board:
       print(1, '-', (self._size//2)*self._size + (self._size//2))
       if move == (self._size//2)*self._size + (self._size//2):
         print(2)
-        while (move - self._size - 1) >= 0:
+        up_left = move - self._size - 1
+        while up_left >= 0:
           print(2, '-', move - self._size - 1)
-          if board[move - self._size - 1] != player:
-            print(2, '- if', board[move - self._size - 1], player)
+          if board[up_left].player != player:
             return {
               'game_over': False,
             }
-        while (move + self._size + 1) < (self._size**2):
+          up_left -= self._size - 1
+
+        down_right = (move + self._size + 1)
+        while down_right < (self._size**2):
           print(3, '-', move + self._size + 1)
-          if board[move + self._size + 1] != player:
+          if board[down_right].player != player:
             print(3, '- if')
             return {
               'game_over': False,
             }
+          down_right += self._size + 1
         print(4)
         return {
             'game_over': True,
             'win': True,
+            'index': move,
             'player': player,
             'win_condition': 'center',
           }
