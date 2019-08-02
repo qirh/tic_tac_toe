@@ -211,7 +211,7 @@ class Board:
           return result
 
       # play a corner
-      for move in [0, self._size-1, 6, (self._size**2)-1]: #TODO: figure out 6
+      for move in [0, self._size-1, (self._size**2)-self._size, (self._size**2)-1]:
         if self._board[move].is_free:
           result = self.make_move(move, COMPUTER)
           result['move']  = move
